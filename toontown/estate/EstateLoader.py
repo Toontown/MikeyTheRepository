@@ -193,7 +193,6 @@ class EstateLoader(SafeZoneLoader.SafeZoneLoader):
         self.place = None
         base.cr.playGame.setPlace(self.place)
         base.cr.cache.flush()
-        taskMgr.remove('estate-airplane')
         self.plane.removeAirplane()
 
     def handleEstateDone(self, doneStatus = None):

@@ -27,9 +27,6 @@ class DistributedHouseDoor(DistributedDoor.DistributedDoor):
 
     def getTriggerName(self):
         return 'door_trigger_' + str(self.houseId)
-        
-    def getEnterTriggerEvent(self):
-        return 'enter' + self.getTriggerName()
 
     def hideDoorParts(self):
         pass
@@ -57,10 +54,6 @@ class DistributedHouseDoor(DistributedDoor.DistributedDoor):
         self.accept(self.getEnterTriggerEvent(), self.doorTrigger)
         self.acceptOnce('clearOutToonInterior', self.doorTrigger)
         self.zoneDoneLoading = 0
-        
-        if self.isInterior():
-            trigger = self.getBuilding().find('**/door_trigger*')
-            trigger.setName(self.getTriggerName())
 
     def getBuilding(self, allowEmpty = False):
         if not self.__dict__.has_key('building'):

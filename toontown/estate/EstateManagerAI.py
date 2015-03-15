@@ -99,34 +99,6 @@ class LoadHouseFSM(FSM):
     def enterOff(self):
         self.done = True
         self.callback(self.house)
-        
-class LoadPetFSM(FSM):
-    def __init__(self, mgr, estate, toon, callback):
-        FSM.__init__(self, 'LoadPetFSM')
-        self.mgr = mgr
-        self.estate = estate
-        self.toon = toon
-        self.callback = callback
-
-        self.done = False
-
-    def start(self):
-        self.petId = self.toon['setPetId'][0]
-        if not self.petId in self.mgr.air.doId2do:
-            self.mgr.air.sendActivate(self.petId, self.mgr.air.districtId, self.estate.zoneId)
-            self.acceptOnce('generate-%d' % self.petId, self.__generated)
-            
-        else:
-            self.__generated(self.mgr.air.doId2do[self.petId])
-
-    def __generated(self, pet):
-        self.pet = pet
-        self.estate.pets.append(pet)
-        self.demand('Off')
-
-    def enterOff(self):
-        self.done = True
-        self.callback(self.pet)
 
 class LoadEstateFSM(FSM):
     def __init__(self, mgr, callback):
@@ -230,12 +202,7 @@ class LoadEstateFSM(FSM):
             
     def enterLoadEstate(self):
         # Activate the estate:
-        fields = {}
-        for i, toon in enumerate(self.toonIds):
-            fields['setSlot%dToonId' % i] = (toon,)
-            
-        self.mgr.air.sendActivate(self.estateId, self.mgr.air.districtId, self.zoneId,
-                                  self.mgr.air.dclassesByName['DistributedEstateAI'], fields)
+        self.mgr.air.sendActivate(self.estateId, self.mgr.air.districtId, self.zoneId)
 
         # Now we wait for the estate to show up... We do this by hanging a messenger
         # hook which the DistributedEstateAI throws once it spawns.
@@ -243,7 +210,6 @@ class LoadEstateFSM(FSM):
 
     def __gotEstate(self, estate):
         self.estate = estate
-        estate.pets = []
 
         # Gotcha! Now we need to load houses:
         self.demand('LoadHouses')
@@ -269,24 +235,6 @@ class LoadEstateFSM(FSM):
 
         # A houseFSM just finished! Let's see if all of them are done:
         if all(houseFSM.done for houseFSM in self.houseFSMs):
-            self.demand('LoadPets')
-            
-    def enterLoadPets(self):
-        self.petFSMs = []
-        for houseIndex in range(6):
-            toon = self.toons[houseIndex]
-            if toon and toon['setPetId'][0] != 0:
-                fsm = LoadPetFSM(self.mgr, self.estate, toon, self.__petDone)
-                self.petFSMs.append(fsm)
-                fsm.start()
-            
-    def __petDone(self, pet):
-        if self.state != 'LoadPets':
-            pet.requestDelete()
-            return
-
-        # A houseFSM just finished! Let's see if all of them are done:
-        if all(petFSM.done for petFSM in self.petFSMs):
             self.demand('Finished')
 
     def enterFinished(self):
@@ -313,7 +261,6 @@ class EstateManagerAI(DistributedObjectAI):
         self.estate2toons = {}
         self.toon2estate = {}
         self.estate2timeout = {}
-        self.zoneId2owner = {}
         
     def getEstateZone(self, avId):
         senderId = self.air.getAvatarIdFromSender()
@@ -377,12 +324,11 @@ class EstateManagerAI(DistributedObjectAI):
 
                 # And I guess we won't need our zoneId anymore...
                 self.air.deallocateZone(zoneId)
-                del self.zoneId2owner[zoneId]
 
             toon.loadEstateFSM = None
 
         self.acceptOnce(self.air.getAvatarExitEvent(toon.doId), self._unloadEstate, extraArgs=[toon])
-        self.zoneId2owner[zoneId] = avId
+
         toon.loadEstateFSM = LoadEstateFSM(self, estateLoaded)
         toon.loadEstateFSM.start(accId, zoneId)
 
@@ -437,16 +383,9 @@ class EstateManagerAI(DistributedObjectAI):
         # Destroy estate and unmap from owner:
         estate.destroy()
         estate.owner.estate = None
-        
-        # destroy pets
-        for pet in estate.pets:
-            pet.requestDelete()
-            
-        estate.pets = []
 
         # Free estate's zone:
         self.air.deallocateZone(estate.zoneId)
-        del self.zoneId2owner[estate.zoneId]
 
     def _sendToonsToPlayground(self, estate, reason):
         for toon in self.estate2toons.get(estate, []):
@@ -455,12 +394,10 @@ class EstateManagerAI(DistributedObjectAI):
 
     def _mapToEstate(self, toon, estate):
         self._unmapFromEstate(toon)
+
         self.estate2toons.setdefault(estate, []).append(toon)
         self.toon2estate[toon] = estate
 
-        if hasattr(toon, 'enterEstate'):
-            toon.enterEstate(estate.owner.doId, estate.zoneId)
-            
     def _unmapFromEstate(self, toon):
         estate = self.toon2estate.get(toon)
         if not estate: return
@@ -470,20 +407,6 @@ class EstateManagerAI(DistributedObjectAI):
             self.estate2toons[estate].remove(toon)
         except (KeyError, ValueError):
             pass
-        
-        if hasattr(toon, 'exitEstate'):
-            toon.exitEstate()
-        
+
     def _lookupEstate(self, toon):
         return self.toon2estate.get(toon)
-
-    def getOwnerFromZone(self, zoneId):
-        return self.zoneId2owner.get(zoneId, 0)
-        
-    def getEstateZones(self, ownerId):
-        estate = self._lookupEstate(self.air.doId2do.get(ownerId))
-        if estate:
-            return [estate.zoneId]
-            
-        return []
-        

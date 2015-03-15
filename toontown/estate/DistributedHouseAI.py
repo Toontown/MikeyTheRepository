@@ -278,7 +278,7 @@ class DistributedHouseAI(DistributedObjectAI):
         x.append(item)
         self.b_setAtticItems(x.getBlob())
             
-@magicWord(category=CATEGORY_FUN, types=[int])
+@magicWord(category=CATEGORY_OVERRIDE, types=[int])
 def houseType(type=0):
     """Set target house type (must be spawned!). Default (if left blank) is 0 (normal house)."""
     if not 0 <= type <= 5:
