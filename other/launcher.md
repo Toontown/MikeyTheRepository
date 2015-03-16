@@ -2,10 +2,11 @@
 The launcher is a gui that connects to MySQL
 and updates out of date files
 # Todo
-- [ ] Login
+- [x] Login
+- [ ] Connect to actual game (somewhat done)
 - [x] File Scanning
 - [ ] File Updating
-- [ ] Ban Checker
+- [x] Ban Checker
 - [ ] GUI extras
 
 # GUI Extras 

@@ -1,7 +1,7 @@
 general:
     eventlogger: 127.0.0.1:7197
     dc_files:
-        - ../tth.dc
+        - ../tthr.dc
 
 messagedirector:
     bind: 127.0.0.1:7199

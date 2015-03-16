@@ -7,7 +7,7 @@
 general:
     eventlogger: 0.0.0.0:7197
     dc_files:
-        - ../tth.dc
+        - ../tthr.dc
 
 messagedirector:
     bind: 0.0.0.0:7199

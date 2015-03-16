@@ -27,7 +27,7 @@ class TTLauncher(LauncherBase):
     def __init__(self):
         self.http = HTTPClient()
 
-        self.logPrefix = 'tth-'
+        self.logPrefix = 'tthr-'
 
         ltime = 1 and time.localtime()
         logSuffix = datetime.datetime.now().strftime("%d-%b-%Y_%H_%M_%S")
