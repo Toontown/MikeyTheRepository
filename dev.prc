@@ -13,7 +13,7 @@ eventlog-host 127.0.0.1
 server-version tth-dev
 ###########################
 
-dc-file tth.dc
+dc-file tthr.dc
 want-dev #f
 use-libpandadna #t
 

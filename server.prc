@@ -12,7 +12,7 @@ eventlog-host gsbeta.toontownhouse.net
 air-connect gsbeta.toontownhouse.net
 ###########################
 
-dc-file tth.dc
+dc-file tthr.dc
 want-dev #f
 use-libpandadna #t
 
