@@ -10,35 +10,23 @@ class ToontownLoadingScreen():
     def __init__(self):
         self.__expectedCount = 0
         self.__count = 0
-        self.screen = loader.loadModel('phase_3/models/gui/progress-background')
-        self.gui = self.screen.find('**/bg')
-        self.shadow = self.screen.find('**/bar_shadow')
-        self.shadow.reparentTo(self.gui)
-        self.banner = hidden.attachNewNode('__dummy__')
-        
-        self.tip = DirectLabel(guiId='ToontownLoadingScreenTip', parent = self.banner, relief = None,
-                                 text='', text_scale = TTLocalizer.TLStip, textMayChange = 1, pos=(-0.41, 0.0, 0.235),
-                                 text_fg = (0.4, 0.3, 0.2, 1), text_wordwrap = 9, text_align = TextNode.ALeft)
-                                 
-        self.title = DirectLabel(guiId = 'ToontownLoadingScreenTitle', parent = self.gui, relief = None,
-                                 pos = (-1.06, 0, -0.77), text = '', textMayChange = 1, text_scale = 0.08,
-                                 text_fg = (0, .9, 0, 1), text_align = TextNode.ALeft,
-                                 text_font = ToontownGlobals.getMinnieFont())
-                                 
-        self.waitBar = DirectWaitBar(guiId = 'ToontownLoadingScreenWaitBar', parent = self.gui,
-                                     frameSize = (-1.06, 1.06, -0.03, 0.03), pos = (0, 0, -0.85),
-                                     text = '')
-                                     
-        self.logo = OnscreenImage('phase_3/maps/toontown-logo-new.png')
-        self.logo.reparentTo(self.gui)
-        self.logo.setScale(self.gui, (0.53,1,0.35))
-        self.logo.setTransparency(TransparencyAttrib.MAlpha)
-        self.logo.setZ(0.73)
+        self.gui = loader.loadModel('phase_3/models/gui/progress-background')
+        self.banner = loader.loadModel('phase_3/models/gui/toon_council').find('**/scroll')
+        self.banner.reparentTo(self.gui)
+        self.banner.setScale(0.4, 0.4, 0.4)
+        self.tip = DirectLabel(guiId='ToontownLoadingScreenTip', parent=self.banner, relief=None, text='', text_scale=TTLocalizer.TLStip, textMayChange=1, pos=(-1.2, 0.0, 0.1), text_fg=(0.4, 0.3, 0.2, 1), text_wordwrap=13, text_align=TextNode.ALeft)
+        self.title = DirectLabel(guiId='ToontownLoadingScreenTitle', parent=self.gui, relief=None, pos=(-1.06, 0, -0.77), text='', textMayChange=1, text_scale=0.08, text_fg=(0, 0, 0.5, 1), text_align=TextNode.ALeft)
+        self.waitBar = DirectWaitBar(guiId='ToontownLoadingScreenWaitBar', parent=self.gui, frameSize=(-1.06,
+         1.06,
+         -0.03,
+         0.03), pos=(0, 0, -0.85), text='')
+        return
 
     def destroy(self):
         self.tip.destroy()
         self.title.destroy()
         self.waitBar.destroy()
+        self.banner.removeNode()
         self.gui.removeNode()
 
     def getTip(self, tipCategory):
@@ -51,13 +39,6 @@ class ToontownLoadingScreen():
         self.__count = 0
         self.__expectedCount = range
         if gui:
-            if self.banner.getName() == '__dummy__':
-                self.banner = loader.loadModel('phase_3.5/models/gui/stickerbook_gui').find('**/paper_note')
-                self.banner.reparentTo(self.gui, 20)
-                self.banner.setScale(1.15, 1.0, 1.0)
-                self.banner.setZ(-0.13)
-                self.tip.reparentTo(self.banner)
-        
             self.waitBar.reparentTo(self.gui)
             self.title.reparentTo(self.gui)
             self.gui.reparentTo(aspect2dp, NO_FADE_SORT_INDEX)
